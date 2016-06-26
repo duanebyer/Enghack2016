@@ -22,6 +22,7 @@ public class MotherBrainMain {
         Socket[] sockets = new Socket[NUM_BRAINS];
         for (int i = 0; i < NUM_BRAINS; ++i) {
             sockets[i] = server.accept();
+            System.out.println((i + 1) + " brains have connected");
         }
         
         MotherBrain motherBrain = new MotherBrain(Arrays.asList(sockets));
@@ -32,7 +33,7 @@ public class MotherBrainMain {
             numbers.add(random.nextInt());
         }
         
-        List<List<Integer>> subLists = new ArrayList<List<Integer>>(NUM_BRAINS);
+        final List<List<Integer>> subLists = new ArrayList<List<Integer>>(NUM_BRAINS);
         for (int i = 0; i < NUM_BRAINS; ++i) {
             int divisor = NUM_ELEMENTS / NUM_BRAINS;
             int start = i * divisor;
