@@ -15,19 +15,27 @@ import java.util.List;
 public final class MotherBrain {
 
     public MotherBrain(List<Socket> sockets) throws IOException {
-        _sockets = new ArrayList<>(sockets);
-        _inputStreams = new ArrayList<>();
-        _outputStreams = new ArrayList<>();
-        _numTasksPerSocket = new ArrayList<>();
+        
+        synchronized(_lock) {
+            _sockets = new ArrayList<>(sockets);
+            _inputStreams = new ArrayList<>();
+            _outputStreams = new ArrayList<>();
+            _numTasksPerSocket = new ArrayList<>();
+            for (int i = 0; i < _sockets.size(); ++i) {
+                _numTasksPerSocket.add(0);
+                _sockets.get(i).getInputStream();
+                ObjectOutputStream outputStream = new ObjectOutputStream(_sockets.get(i).getOutputStream());
+                outputStream.flush();
+                final ObjectInputStream inputStream = new ObjectInputStream(_sockets.get(i).getInputStream());
+                _outputStreams.add(outputStream);
+                _inputStreams.add(inputStream);
+            }
+        }
+        
         for (int i = 0; i < _sockets.size(); ++i) {
-            _numTasksPerSocket.add(0);
-            _sockets.get(i).getInputStream();
-            ObjectOutputStream outputStream = new ObjectOutputStream(_sockets.get(i).getOutputStream());
-            outputStream.flush();
-            final ObjectInputStream inputStream = new ObjectInputStream(_sockets.get(i).getInputStream());
-            _outputStreams.add(outputStream);
-            _inputStreams.add(inputStream);
-
+            
+            final ObjectInputStream inputStream = _inputStreams.get(i);
+            
             new Thread(new Runnable() {
                 @Override
                 public void run() {
