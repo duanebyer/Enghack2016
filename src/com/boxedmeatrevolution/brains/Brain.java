@@ -25,21 +25,57 @@ public final class Brain {
 
                 try {
                     while(true) {
-                        final Task task = (Task) inputStream.readObject();
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Serializable result = task.call();
-                                try {
-                                    outputStream.writeLong(task.getId());
-                                    outputStream.writeObject(result);
-                                    outputStream.flush();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                    System.exit(0);
+                        Message message = (Message) inputStream.readObject();
+                        if (message.type == Message.Type.MOTHER_SEND_RESULT) {
+                            Message.MotherSendResult data = (Message.MotherSendResult) message.data;
+                            _taskIds.add(data.taskId);
+                            _results.add(data.result);
+                        }
+                        else if (message.type == Message.Type.MOTHER_REQUEST_TASK) {
+                            final Task task = ((Message.MotherRequestTask) message.data).task;
+                            task.registerListener(new Task.TaskRequestedEventListener() {
+                                @Override
+                                public List<Serializable> onTaskRequested(List<Task> tasks) throws IOException {
+
+                                    for (Task task : tasks) {
+                                        synchronized (Brain.this._lock) {
+                                            outputStream.writeObject(new Message(Message.Type.BRAIN_REQUEST_TASK, new Message.BrainRequestTask(task)));
+                                            outputStream.flush();
+                                        }
+                                    }
+
+                                    List<Serializable> result = new ArrayList<>();
+
+                                    for (Task task : tasks) {
+
+                                        while (!_taskIds.contains(task.getId())) {
+                                        }
+
+                                        synchronized (_taskIds) {
+                                            int taskIndex = _taskIds.indexOf(task.getId());
+                                            _taskIds.remove(taskIndex);
+                                            result.add(_results.remove(taskIndex));
+                                        }
+                                    }
+                                    return result;
                                 }
-                            }
-                        }).start();
+                            });
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        Serializable result = task.call();
+                                        synchronized (Brain.this._lock) {
+                                            outputStream.writeObject(new Message(Message.Type.BRAIN_SEND_RESULT, new Message.BrainSendResult(task.getId(), result)));
+                                            outputStream.flush();
+                                        }
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        System.exit(0);
+                                    }
+                                }
+                            }).start();
+                        }
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -47,8 +83,12 @@ public final class Brain {
                     e.printStackTrace();
                 }
             }
+
+            private List<Long> _taskIds = new ArrayList<>();
+            private List<Serializable> _results = new ArrayList<>();
         }).start();
 
     }
 
+    private final Integer _lock = 3;
 }
