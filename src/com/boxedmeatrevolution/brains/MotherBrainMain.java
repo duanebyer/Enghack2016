@@ -14,7 +14,7 @@ import java.util.Random;
  */
 public class MotherBrainMain {
 
-    public static final int NUM_BRAINS = 1;
+    public static final int NUM_BRAINS = 4;
     public static final int NUM_ELEMENTS = 1000000;
     
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -27,7 +27,7 @@ public class MotherBrainMain {
         
         MotherBrain motherBrain = new MotherBrain(Arrays.asList(sockets));
 
-        motherBrain.dispatch(new FibonacciTask(10), new MotherBrain.TaskFinishedEventListener() {
+        motherBrain.dispatch(new FibonacciTask(7), new MotherBrain.TaskFinishedEventListener() {
             @Override
             public void onTaskFinished(Serializable result) throws IOException {
                 System.out.println("fib num is " + result.toString());
