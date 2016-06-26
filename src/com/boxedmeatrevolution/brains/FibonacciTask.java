@@ -17,7 +17,9 @@ public class FibonacciTask extends Task {
 
     @Override
     public Serializable call() throws IOException {
+        System.out.println("Prelim F" + _numberIndex);
         if (_numberIndex <= 1) {
+            System.out.println("Calculating F" + _numberIndex + " = " + 1);
             return Integer.valueOf(1);
         }
 
