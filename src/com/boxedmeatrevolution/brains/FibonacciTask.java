@@ -17,7 +17,6 @@ public class FibonacciTask extends Task {
 
     @Override
     public Serializable call() throws IOException {
-        System.out.println("Calculating F" + _numberIndex);
         if (_numberIndex <= 1) {
             return Integer.valueOf(1);
         }
@@ -25,7 +24,9 @@ public class FibonacciTask extends Task {
         List<Serializable> previousNumbers = requestTasks(Arrays.<Task>asList(new FibonacciTask(_numberIndex - 1), new FibonacciTask(_numberIndex - 2)));
         Integer previous = (Integer) previousNumbers.get(0);
         Integer secondPrevious = (Integer) previousNumbers.get(1);
-        return previous + secondPrevious;
+        Integer result = previous + secondPrevious;
+        System.out.println("Calculating F" + _numberIndex + " = " + result);
+        return result;
     }
 
     private final int _numberIndex;
