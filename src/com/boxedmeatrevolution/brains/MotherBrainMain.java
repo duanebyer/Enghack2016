@@ -38,7 +38,7 @@ public class MotherBrainMain {
             int divisor = NUM_ELEMENTS / NUM_BRAINS;
             int start = i * divisor;
             int end = (i + 1) * divisor;
-            subLists.set(i, numbers.subList(start, end));
+            subLists.add(numbers.subList(start, end));
         }
         
         for (int i = 0; i < NUM_BRAINS; ++i) {
@@ -58,7 +58,7 @@ public class MotherBrainMain {
             
         }
         
-        List<Integer> assembledList = new ArrayList<>(NUM_ELEMENTS);
+        int[] assembledList = new int[NUM_ELEMENTS];
         int listPosition = NUM_ELEMENTS - 1;
         boolean allEmpty;
         do {
@@ -77,12 +77,12 @@ public class MotherBrainMain {
                     largestIndex = i;
                 }
             }
-            assembledList.set(listPosition, largest);
+            assembledList[listPosition] = largest;
             --listPosition;
             subLists.get(largestIndex).remove(subLists.get(largestIndex).size() - 1);
         } while (!allEmpty);
         
-        System.out.println(assembledList);
+        System.out.println(Arrays.toString(assembledList));
     }
     
     private static int _numComplete = 0;
