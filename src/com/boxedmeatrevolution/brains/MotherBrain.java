@@ -71,7 +71,7 @@ public final class MotherBrain {
                     synchronized(MotherBrain.this._lock) {
                         int taskIndex = -1;
                         for (int i = 0; i < _tasks.size(); ++i) {
-                            if (_tasks.get(i).getId() == taskId) {
+                            if (_tasks.get(i).getId().equals(taskId)) {
                                 taskIndex = i;
                                 break;
                             }
