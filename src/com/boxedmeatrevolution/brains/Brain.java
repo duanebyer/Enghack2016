@@ -29,8 +29,10 @@ public final class Brain {
                         Message message = (Message) inputStream.readObject();
                         if (message.type == Message.Type.MOTHER_SEND_RESULT) {
                             Message.MotherSendResult data = (Message.MotherSendResult) message.data;
-                            _taskIds.add(data.taskId);
-                            _results.add(data.result);
+                            synchronized (_taskIds) {
+                                _taskIds.add(data.taskId);
+                                _results.add(data.result);
+                            }
                         }
                         else if (message.type == Message.Type.MOTHER_REQUEST_TASK) {
                             final Task task = ((Message.MotherRequestTask) message.data).task;
