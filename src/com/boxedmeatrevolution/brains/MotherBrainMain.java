@@ -14,7 +14,7 @@ import java.util.Random;
  */
 public class MotherBrainMain {
 
-    public static final int NUM_BRAINS = 2;
+    public static final int NUM_BRAINS = 4;
     public static final int NUM_ELEMENTS = 1000000;
     
     public static void main(String[] args) throws IOException, ClassNotFoundException {
@@ -50,41 +50,44 @@ public class MotherBrainMain {
                     public synchronized void onTaskFinished(Serializable result) {
                         subLists.set(index, (List<Integer>) result);
                         ++_numComplete;
+                        System.out.println("BRAIN DOZNO!!!!, NumComplete " + _numComplete);
                     }
                 });
         }
         
-        while (_numComplete != NUM_BRAINS) {
-            
-        }
+        while (_numComplete != NUM_BRAINS) { }
+        
+        System.out.println("Finished sorting, merging....");
         
         int[] assembledList = new int[NUM_ELEMENTS];
         int listPosition = NUM_ELEMENTS - 1;
-        boolean allEmpty;
         do {
-            int largest = Integer.MAX_VALUE;
+            int largest = Integer.MIN_VALUE;
             int largestIndex = -1;
-            allEmpty = true;
             for (int i = 0; i < NUM_BRAINS; ++i) {
                 List<Integer> nextList = subLists.get(i);
                 if (nextList.isEmpty()) {
                     continue;
                 }
                 int next = nextList.get(nextList.size() - 1);
-                allEmpty = false;
                 if (next > largest) {
                     largest = next;
                     largestIndex = i;
                 }
             }
+            if (largestIndex == -1) {
+                break;
+            }
             assembledList[listPosition] = largest;
             --listPosition;
             subLists.get(largestIndex).remove(subLists.get(largestIndex).size() - 1);
-        } while (!allEmpty);
+        } while (true);
+        
+        
         
         System.out.println(Arrays.toString(assembledList));
     }
     
-    private static int _numComplete = 0;
+    private static volatile int _numComplete = 0;
 
 }
