@@ -18,6 +18,7 @@ public class ListSorterTask<T extends Comparable<T>> extends Task {
     @Override
     public Serializable call() {
         Collections.sort(_list);
+        System.out.println("Brain finished!");
         return _list;
     }
 
