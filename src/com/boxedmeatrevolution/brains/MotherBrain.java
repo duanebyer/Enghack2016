@@ -21,8 +21,12 @@ public final class MotherBrain {
         _numTasksPerSocket = new ArrayList<>();
         for (int i = 0; i < _sockets.size(); ++i) {
             _numTasksPerSocket.add(0);
-            _inputStreams.add(new ObjectInputStream(_sockets.get(i).getInputStream()));
-            _outputStreams.add(new ObjectOutputStream(_sockets.get(i).getOutputStream()));
+            _sockets.get(i).getInputStream();
+            ObjectOutputStream outputStream = new ObjectOutputStream(_sockets.get(i).getOutputStream());
+            outputStream.flush();
+            ObjectInputStream inputStream = new ObjectInputStream(_sockets.get(i).getInputStream());
+            _outputStreams.add(outputStream);
+            _inputStreams.add(inputStream);
         }
     }
 
@@ -32,6 +36,7 @@ public final class MotherBrain {
 
         ObjectOutputStream outputStream = _outputStreams.get(minIndex);
         outputStream.writeObject(task);
+        outputStream.flush();
 
         _tasks.add(task);
         _taskListeners.add(listener);

@@ -13,7 +13,7 @@ import java.util.List;
 public class MotherBrainMain {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        ServerSocket server = new ServerSocket(8080);
+        ServerSocket server = new ServerSocket(9122);
         Socket socket = server.accept();
 
         MotherBrain motherBrain = new MotherBrain(Arrays.asList(socket));
