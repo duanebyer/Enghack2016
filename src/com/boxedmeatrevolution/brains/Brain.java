@@ -25,7 +25,7 @@ public final class Brain {
                 final Task task;
                 try {
                     task = (Task) inputStream.readObject();
-
+                    System.out.println("Task received");
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
