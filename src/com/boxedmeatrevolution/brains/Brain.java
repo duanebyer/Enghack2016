@@ -22,24 +22,25 @@ public final class Brain {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                final Task task;
+
                 try {
-                    task = (Task) inputStream.readObject();
-                    System.out.println("Task received");
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Serializable result = task.call();
-                            try {
-                                outputStream.writeLong(task.getId());
-                                outputStream.writeObject(result);
-                                outputStream.flush();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                                System.exit(0);
+                    while(true) {
+                        final Task task = (Task) inputStream.readObject();
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Serializable result = task.call();
+                                try {
+                                    outputStream.writeLong(task.getId());
+                                    outputStream.writeObject(result);
+                                    outputStream.flush();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    System.exit(0);
+                                }
                             }
-                        }
-                    }).start();
+                        }).start();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 } catch (ClassNotFoundException e) {
