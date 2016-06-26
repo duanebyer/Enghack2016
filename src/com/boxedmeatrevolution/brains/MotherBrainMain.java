@@ -27,7 +27,7 @@ public class MotherBrainMain {
         
         MotherBrain motherBrain = new MotherBrain(Arrays.asList(sockets));
 
-        motherBrain.dispatch(new FibonacciTask(7), new MotherBrain.TaskFinishedEventListener() {
+        motherBrain.dispatch(new FibonacciTask(4), new MotherBrain.TaskFinishedEventListener() {
             @Override
             public void onTaskFinished(Serializable result) throws IOException {
                 System.out.println("fib num is " + result.toString());

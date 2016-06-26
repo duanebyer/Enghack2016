@@ -8,6 +8,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by aidan on 2016-06-25.
@@ -41,7 +42,6 @@ public final class MotherBrain {
                 @Override
                 public void run() {
                     while (true) {
-                        long taskId = 0;
                         try {
                             Message message = (Message) inputStream.readObject();
                             if (message.type == Message.Type.BRAIN_SEND_RESULT) {
@@ -67,7 +67,7 @@ public final class MotherBrain {
                     }
                 }
 
-                private void taskFinished(long taskId, Serializable result) throws IOException {
+                private void taskFinished(UUID taskId, Serializable result) throws IOException {
                     synchronized(MotherBrain.this._lock) {
                         int taskIndex = -1;
                         for (int i = 0; i < _tasks.size(); ++i) {

@@ -1,6 +1,7 @@
 package com.boxedmeatrevolution.brains;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 /**
  * Created by aidan on 2016-06-26.
@@ -27,20 +28,20 @@ public final class Message implements Serializable {
     }
 
     public static class MotherSendResult implements Serializable {
-        public MotherSendResult(long taskId, Serializable result) {
+        public MotherSendResult(UUID taskId, Serializable result) {
             this.taskId = taskId;
             this.result = result;
         }
-        long taskId;
+        UUID taskId;
         Serializable result;
     }
 
     public static class BrainSendResult implements Serializable {
-        public BrainSendResult(long taskId, Serializable result) {
+        public BrainSendResult(UUID taskId, Serializable result) {
             this.taskId = taskId;
             this.result = result;
         }
-        long taskId;
+        UUID taskId;
         Serializable result;
     }
 

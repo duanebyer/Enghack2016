@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 
 /**
@@ -84,7 +85,7 @@ public final class Brain {
                 }
             }
 
-            private List<Long> _taskIds = new ArrayList<>();
+            private List<UUID> _taskIds = new ArrayList<>();
             private List<Serializable> _results = new ArrayList<>();
         }).start();
 

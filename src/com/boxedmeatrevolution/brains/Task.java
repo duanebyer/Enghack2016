@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by aidan on 2016-06-25.
@@ -11,11 +12,9 @@ import java.util.List;
 public abstract class Task implements Serializable {
 
     public Task() {
-        _id = _nextId++;
-        _listener = null;
     }
 
-    public long getId() {
+    public UUID getId() {
         return _id;
     }
 
@@ -32,9 +31,8 @@ public abstract class Task implements Serializable {
     }
     public abstract Serializable call() throws IOException;
 
-    private static long _nextId;
-    private long _id;
+    private UUID _id = UUID.randomUUID();
 
-    private TaskRequestedEventListener _listener;
+    private TaskRequestedEventListener _listener = null;
 
 }
