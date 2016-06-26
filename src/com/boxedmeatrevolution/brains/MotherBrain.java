@@ -24,9 +24,44 @@ public final class MotherBrain {
             _sockets.get(i).getInputStream();
             ObjectOutputStream outputStream = new ObjectOutputStream(_sockets.get(i).getOutputStream());
             outputStream.flush();
-            ObjectInputStream inputStream = new ObjectInputStream(_sockets.get(i).getInputStream());
+            final ObjectInputStream inputStream = new ObjectInputStream(_sockets.get(i).getInputStream());
             _outputStreams.add(outputStream);
             _inputStreams.add(inputStream);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (true) {
+                        long taskId = 0;
+                        try {
+                            taskId = inputStream.readLong();
+                            Serializable result = (Serializable) inputStream.readObject();
+                            taskFinished(taskId, result);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            System.exit(0);
+                        }
+                    }
+                }
+
+                private synchronized void taskFinished(long taskId, Serializable result) {
+                    int taskIndex = -1;
+                    for (int i = 0; i < _tasks.size(); ++i) {
+                        if (_tasks.get(i).getId() == taskId) {
+                            taskIndex = i;
+                            break;
+                        }
+                    }
+
+                    _taskListeners.get(taskIndex).onTaskFinished(result);
+
+                    _tasks.remove(taskIndex);
+                    _taskListeners.remove(taskIndex);
+                    Socket taskSocket = _socketForTask.remove(taskIndex);
+                    int socketIndex = _sockets.indexOf(taskSocket);
+                    _numTasksPerSocket.set(socketIndex, _numTasksPerSocket.get(socketIndex) - 1);
+                }
+            }).start();
         }
     }
 
@@ -34,9 +69,13 @@ public final class MotherBrain {
         Integer min = Collections.min(_numTasksPerSocket);
         int minIndex = _numTasksPerSocket.indexOf(min);
 
-        ObjectOutputStream outputStream = _outputStreams.get(minIndex);
+        final ObjectOutputStream outputStream = _outputStreams.get(minIndex);
         outputStream.writeObject(task);
         outputStream.flush();
+
+        final ObjectInputStream inputStream = _inputStreams.get(minIndex);
+
+        final Socket socket = _sockets.get(minIndex);
 
         _tasks.add(task);
         _taskListeners.add(listener);
@@ -44,35 +83,6 @@ public final class MotherBrain {
 
         int socketIndex = _sockets.indexOf(_sockets.get(minIndex));
         _numTasksPerSocket.set(socketIndex, _numTasksPerSocket.get(socketIndex) + 1);
-    }
-
-    public void update() throws IOException, ClassNotFoundException {
-        for (int inputIndex = 0; inputIndex < _inputStreams.size(); ++inputIndex) {
-
-            if (_inputStreams.get(inputIndex).available() == 0) {
-                break;
-            }
-            long taskId = _inputStreams.get(inputIndex).readLong();
-            Serializable result = (Serializable) _inputStreams.get(inputIndex).readObject();
-
-            if (result != null) {
-                int taskIndex = -1;
-                for (int i = 0; i < _tasks.size(); ++i) {
-                    if (_tasks.get(i).getId() == taskId) {
-                        taskIndex = i;
-                        break;
-                    }
-                }
-
-                _taskListeners.get(taskIndex).onTaskFinished(result);
-
-                _tasks.remove(taskIndex);
-                _taskListeners.remove(taskIndex);
-                Socket taskSocket = _socketForTask.remove(taskIndex);
-                int socketIndex = _sockets.indexOf(taskSocket);
-                _numTasksPerSocket.set(socketIndex, _numTasksPerSocket.get(socketIndex) - 1);
-            }
-        }
     }
 
     public static interface TaskFinishedEventListener {

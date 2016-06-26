@@ -26,10 +26,6 @@ public class MotherBrainMain {
                         System.out.println((List<Integer>) result);
                     }
                 });
-
-        while (true) {
-            motherBrain.update();
-        }
     }
 
 }

@@ -9,13 +9,14 @@ import java.net.Socket;
 public final class BrainMain {
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        Socket socket = new Socket("DESKTOP-5889S5H", 9122);
+        Socket socket = new Socket("localhost", 9122);
 
         System.out.println("HEYOOOOO");
 
         Brain brain = new Brain(socket);
+
         while (true) {
-            brain.update();
+
         }
     }
 

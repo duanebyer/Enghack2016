@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 /**
  * Created by aidan on 2016-06-25.
@@ -14,82 +15,39 @@ import java.util.List;
 public final class Brain {
 
     public Brain(Socket socket) throws IOException {
-        _socket = socket;
-        _outputStream = new ObjectOutputStream(socket.getOutputStream());
-        _outputStream.flush();
-        _inputStream = new ObjectInputStream(socket.getInputStream());
+        final ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
+        outputStream.flush();
+        final ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 
-    }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final Task task;
+                try {
+                    task = (Task) inputStream.readObject();
 
-    public void update() throws IOException, ClassNotFoundException {
-        final Task nextTask = receiveTask();
-        if (nextTask != null) {
-
-            int tempTaskIndex = _tasks.size();
-            for (int i = 0; i < _tasks.size(); ++i) {
-                if (_tasks.get(i) == null) {
-                    tempTaskIndex = i;
-                    break;
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Serializable result = task.call();
+                            try {
+                                outputStream.writeLong(task.getId());
+                                outputStream.writeObject(result);
+                                outputStream.flush();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                System.exit(0);
+                            }
+                        }
+                    }).start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
                 }
             }
-            final int taskIndex = tempTaskIndex;
+        }).start();
 
-            if (taskIndex == _tasks.size()) {
-                _tasks.add(null);
-                _taskResults.add(null);
-                _threads.add(null);
-            }
-
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Serializable result = nextTask.call();
-                    _taskResults.set(taskIndex, result);
-                }
-            });
-
-            _tasks.set(taskIndex, nextTask);
-            _threads.set(taskIndex, thread);
-        }
-
-        for (int i = 0; i < _threads.size(); ++i) {
-            if (!_threads.get(i).isAlive()) {
-
-                sendTaskFinished(_tasks.get(i).getId(), _taskResults.get(i));
-
-                _tasks.set(i, null);
-                _taskResults.set(i, null);
-                _threads.set(i, null);
-
-                while (!_tasks.isEmpty() && _tasks.get(_tasks.size() - 1) == null) {
-                    int index = _tasks.size() - 1;
-                    _tasks.remove(index);
-                    _taskResults.remove(index);
-                    _threads.remove(index);
-                }
-            }
-        }
     }
-
-    private Task receiveTask() throws IOException, ClassNotFoundException {
-        if (_inputStream.available() != 0) {
-            return (Task) _inputStream.readObject();
-        }
-        return null;
-    }
-
-    private void sendTaskFinished(long taskId, Serializable result) throws IOException {
-        _outputStream.writeLong(taskId);
-        _outputStream.writeObject(result);
-        _outputStream.flush();
-    }
-
-    private final List<Task> _tasks = new ArrayList<>();
-    private final List<Serializable> _taskResults = new ArrayList<>();
-    private final List<Thread> _threads = new ArrayList<>();
-
-    private ObjectInputStream _inputStream;
-    private ObjectOutputStream _outputStream;
-    private Socket _socket;
 
 }
