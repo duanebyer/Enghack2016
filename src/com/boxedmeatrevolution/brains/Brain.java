@@ -15,8 +15,10 @@ public final class Brain {
 
     public Brain(Socket socket) throws IOException {
         _socket = socket;
-        _inputStream = new ObjectInputStream(socket.getInputStream());
         _outputStream = new ObjectOutputStream(socket.getOutputStream());
+        _outputStream.flush();
+        _inputStream = new ObjectInputStream(socket.getInputStream());
+
     }
 
     public void update() throws IOException, ClassNotFoundException {
@@ -59,10 +61,11 @@ public final class Brain {
                 _taskResults.set(i, null);
                 _threads.set(i, null);
 
-                while (_tasks.get(_tasks.size() - 1) == null) {
-                    _tasks.remove(_tasks.size() - 1);
-                    _taskResults.remove(_tasks.size() - 1);
-                    _threads.remove(_tasks.size() - 1);
+                while (!_tasks.isEmpty() && _tasks.get(_tasks.size() - 1) == null) {
+                    int index = _tasks.size() - 1;
+                    _tasks.remove(index);
+                    _taskResults.remove(index);
+                    _threads.remove(index);
                 }
             }
         }
@@ -78,6 +81,7 @@ public final class Brain {
     private void sendTaskFinished(long taskId, Serializable result) throws IOException {
         _outputStream.writeLong(taskId);
         _outputStream.writeObject(result);
+        _outputStream.flush();
     }
 
     private final List<Task> _tasks = new ArrayList<>();
